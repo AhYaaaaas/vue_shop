@@ -7,9 +7,9 @@ import
   Breadcrumb, BreadcrumbItem,
   Card, Row, Col, Table, TableColumn,
   Switch, Tooltip,Pagination,Dialog,
-  MessageBox,Tag
-}
-  from 'element-ui'
+  MessageBox,Tag,Tree,Select,Option
+} from 'element-ui'
+// import ElementUI from 'element-ui'
 Vue.use(Button)
 Vue.use(Form)
 Vue.use(FormItem)
@@ -33,6 +33,14 @@ Vue.use(Tooltip)
 Vue.use(Pagination)
 Vue.use(Dialog)
 Vue.use(Tag)
+Vue.use(Tree)
+Vue.use(Select)
+Vue.use(Option)
+// Vue.use(ElementUI)
 //弹框需要挂载
+// ElementUI.Dialog.props.lockScroll.default = false;
 Vue.prototype.$message = Message
 Vue.prototype.$confirm = MessageBox.confirm
+
+
+

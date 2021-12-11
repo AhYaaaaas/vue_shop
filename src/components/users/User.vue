@@ -33,12 +33,14 @@
         </el-table-column>
         <el-table-column label="操作" width="220px">
           <template v-slot="scoped">
-            <el-button type="primary" icon="el-icon-edit" size="mini" @click="changeUserInfo(scoped.row.id)"></el-button>
-<!--            删除按钮-->
-            <el-button type="danger" icon="el-icon-delete" size="mini" @click="removeUserConfirmed(scoped.row.id)"></el-button>
+            <el-button type="primary" icon="el-icon-edit" size="mini"
+                       @click="changeUserInfo(scoped.row.id)"></el-button>
+            <!--            删除按钮-->
+            <el-button type="danger" icon="el-icon-delete" size="mini"
+                       @click="removeUserConfirmed(scoped.row.id)"></el-button>
             <!--            设置提示-->
             <el-tooltip class="item" effect="dark" content="分配角色" placement="top-start" :enterable="false">
-              <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+              <el-button type="warning" icon="el-icon-setting" size="mini" @click="allotRole(scoped.row)"></el-button>
             </el-tooltip>
           </template>
         </el-table-column>
@@ -101,6 +103,31 @@
     <el-button @click="editUserInfo = false">取 消</el-button>
     <el-button type="primary" @click="confirmEditUserInfo">确 定</el-button>
   </span>
+    </el-dialog>
+    <el-dialog
+      title="提示"
+      :visible.sync="allotRoleVisible"
+      width="30%"
+      @close="resetAllotRole"
+    >
+      <span>分配角色</span>
+      <div>
+        <p>名称:{{roleInfo.username}}</p>
+        <p>权限称号:{{roleInfo.role_name}}</p>
+        <p>选择称号:</p>
+        <el-select v-model="selectedRole" placeholder="请选择">
+          <el-option
+            v-for="item in RoleList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="allotRoleVisible = false">取 消</el-button>
+        <el-button type="primary"  @click = "updateRole">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
@@ -167,7 +194,11 @@ export default {
           {required: true, message: '请输入用户手机', trigger: 'blur'},
           {validator: checkMobile, trigger: 'blur'}
         ],
-      }
+      },
+      allotRoleVisible: false,
+      roleInfo: [],
+      RoleList:{},
+      selectedRole:""
     }
   },
   created() {
@@ -226,7 +257,7 @@ export default {
       this.getUserList()
     },
     async changeUserInfo(id) {
-      // console.log(id)
+      console.log(id)
       const {data: res} = await this.$http.get(`users/${id}`)
       if (res.meta.status !== 200)
         return this.$message.error("获取用户失败")
@@ -260,19 +291,42 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).catch(error=>error)
-      if(confirmedRes==='cancel'){
+      }).catch(error => error)
+      if (confirmedRes === 'cancel') {
         return this.$message.info("已取消删除")
       }
-      const {data:res} = await this.$http.delete(`users/${id}`)
-      if(res.meta.status!==200){
+      const {data: res} = await this.$http.delete(`users/${id}`)
+      if (res.meta.status !== 200) {
         this.$message.error("删除失败")
-      }else{
+      } else {
         this.$message.success("删除成功")
+
         await this.getUserList()
       }
+    },
+    async allotRole(roleInfo) {
+      this.roleInfo = roleInfo
+      const {data:res} = await this.$http.get("roles")
+      if(res.meta.status!==200){
+        return this.$message.error("获取失败")
+      }
+      this.RoleList = res.data
+      this.allotRoleVisible = !this.allotRoleVisible
+    },
+    async updateRole(){
+      const {data:res} = await this.$http.put(`users/${this.roleInfo.id}/role`,{rid:this.selectedRole})
+      if(res.meta.status!==200){
+        return this.$message.error("更新失败")
+      }else{
+        this.$message.success("更新成功")
+      }
+      await this.getUserList()
+      this.allotRoleVisible = !this.allotRoleVisible
+    },
+    resetAllotRole(){
+      this.roleInfo = []
+      this.selectedRole = ""
     }
-
   }
 }
 </script>
